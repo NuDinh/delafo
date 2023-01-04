@@ -57,7 +57,7 @@ class DELAFO:
             hyper_params = load_config_file(model_config_path[model_name])
             hyper_params['input_shape'] = (X.shape[1],X.shape[2],X.shape[3])
             model = build_selfatt_lstm_model(hyper_params)
-        model.name = model_name
+        model._name = model_name
 
         return cls(model_name,model,X,y,tickers,timesteps_input,timesteps_output)
 
