@@ -73,7 +73,14 @@ class AdditiveAttentionLayer(Layer):
 
 	def compute_output_shape(self, input_shape):
 		return (input_shape[0][0], input_shape[0][2])
-
+	
+	def get_config(self):
+		config = super(AdditiveAttentionLayer, self).get_config()
+		config.update({
+			"arg1": self.latent_dim,
+			"arg2": self.kernel_regularizer,
+		})
+		return config
 
 class SelfAttentionLayer(Layer):
 
@@ -145,3 +152,11 @@ class SelfAttentionLayer(Layer):
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1],input_shape[1])
+    
+    def get_config(self):
+	config = super(AdditiveAttentionLayer, self).get_config()
+	config.update({
+		"arg1": self.latent_dim,
+		"arg2": self.kernel_regularizer,
+	})
+	return config
