@@ -87,10 +87,7 @@ class DELAFO:
     def train_model(self,n_fold,batch_size,epochs):
         tscv = TimeSeriesSplit(n_splits=n_fold)
         all_ratio = []
-        model.save_weights('initweight.h5')
         for train_index, test_index in tscv.split(self.X):
-            model.load_weights('initweight.h5')
-
             X_tr, X_val = self.X[train_index], self.X[test_index[range(self.timesteps_output-1,len(test_index),self.timesteps_output)]]
             y_tr, y_val = self.y[train_index], self.y[test_index[range(self.timesteps_output-1,len(test_index),self.timesteps_output)]]
 
@@ -118,13 +115,6 @@ class DELAFO:
         self.model.save(os.path.join(path_dir,self.model_name,str(ver) + '.h5'))
         print("Model saved at %s" % os.path.join(path_dir,self.model_name))
     
-
-
-
-
-
-
-
 
     def predict_portfolio(self,X):
         results = self.model.predict(X)
