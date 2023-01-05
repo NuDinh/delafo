@@ -86,18 +86,27 @@ class DELAFO:
 
     def train_model(self,n_fold,batch_size,epochs):
         tscv = TimeSeriesSplit(n_splits=n_fold)
+        all_ratio = []
+        model.save_weights('initweight.h5')
         for train_index, test_index in tscv.split(self.X):
+            model.load_weights('initweight.h5')
 
             X_tr, X_val = self.X[train_index], self.X[test_index[range(self.timesteps_output-1,len(test_index),self.timesteps_output)]]
             y_tr, y_val = self.y[train_index], self.y[test_index[range(self.timesteps_output-1,len(test_index),self.timesteps_output)]]
 
             his = self.model.fit(X_tr, y_tr, batch_size=batch_size, epochs= epochs,validation_data=(X_val,y_val))
             mask_tickers = self.predict_portfolio(X_val)
+            temp = [calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]
+            all_ratio.append(temp)
             print('Sharpe ratio of this portfolio: %s' % str([self.calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]))
 
             self.write_log(his,'./logs/%s' % self.model_name,"log_%d.txt"%(test_index[-1]))
-        self.visualize_log('./logs',self.model_name)
 
+        all_ratio = np.asarray(all_ratio)
+        mean_all_ratio = np.mean(all_ratio, axis= 1)
+        print('Mean: {}, std {}'.format(np.mean(mean_all_ratio), np.std(mean_all_ratio)))
+        self.visualize_log('./logs',self.model_name)
+    
     def save_model(self,path_dir="pretrain_model"):
         if os.path.exists(os.path.join(path_dir,self.model_name))==False:
             os.makedirs(os.path.join(path_dir,self.model_name))
@@ -108,6 +117,14 @@ class DELAFO:
             ver = 0
         self.model.save(os.path.join(path_dir,self.model_name,str(ver) + '.h5'))
         print("Model saved at %s" % os.path.join(path_dir,self.model_name))
+    
+
+
+
+
+
+
+
 
     def predict_portfolio(self,X):
         results = self.model.predict(X)
