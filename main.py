@@ -93,7 +93,7 @@ class DELAFO:
 
             his = self.model.fit(X_tr, y_tr, batch_size=batch_size, epochs= epochs,validation_data=(X_val,y_val))
             mask_tickers = self.predict_portfolio(X_val)
-            temp = [calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]
+            temp = [self.calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]
             all_ratio.append(temp)
             print('Sharpe ratio of this portfolio: %s' % str([self.calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]))
 
