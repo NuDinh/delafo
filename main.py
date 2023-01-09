@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import load_model
 class DELAFO:
-    def __init__(self,model_name,model,X,y,tickers,timesteps_input=64,timesteps_output=19, data_from, data_to):
+    def __init__(self,model_name,model,X,y,tickers,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2019):
         self.model_name = model_name
         self.model = model
         self.X,self.y,self.tickers = X,y,tickers
@@ -177,13 +177,15 @@ if __name__ =="__main__":
     parser.add_argument('--model_path', type=str, default='',help='Path to pretrain model')
     parser.add_argument('--timesteps_input', type=int, default=64,help='timesteps (days) for input data')
     parser.add_argument('--timesteps_output', type=int, default=19,help='Timesteps (days) for output data ')
+    parser.add_argument('--data_from', type=int, default=2016,help='Timesteps (days) for output data ')
+    parser.add_argument('--data_to', type=int, default=2019,help='Timesteps (days) for output data ')
     args = parser.parse_args()
 
     if args.load_pretrained == False:
-        delafo = DELAFO.from_existing_config(args.data_path,args.model,model_config_path,args.timesteps_input,args.timesteps_output)
-        delafo.train_model(n_fold=10,batch_size=16,epochs=300)
+        delafo = DELAFO.from_existing_config(args.data_path,args.model,model_config_path,args.timesteps_input,args.timesteps_output,args.data_from,args.data_to)
+        delafo.train_model(n_fold=2,batch_size=16,epochs=10)
         delafo.save_model()
     else:
-        delafo = DELAFO.from_saved_model(args.data_path,args.model_path,args.timesteps_output, arg.data_from, arg.data_to )
-        delafo.train_model(n_fold=10,batch_size=16,epochs=300)
+        delafo = DELAFO.from_saved_model(args.data_path,args.model_path,args.timesteps_output)
+        delafo.train_model(n_fold=2,batch_size=16,epochs=10)
         delafo.save_model()
