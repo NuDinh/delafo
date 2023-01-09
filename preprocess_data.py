@@ -4,7 +4,7 @@ import pickle
 from sklearn.model_selection import train_test_split
 # def prepair_data(path,window_x,window_y):
 
-def data_cleaning(path, window_x, window_y, data_from, data_to):
+def prepair_data(path, window_x, window_y, data_from, data_to):
   """
   path:
   window_x:

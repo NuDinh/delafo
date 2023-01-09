@@ -184,6 +184,6 @@ if __name__ =="__main__":
         delafo.train_model(n_fold=10,batch_size=16,epochs=300)
         delafo.save_model()
     else:
-        delafo = DELAFO.from_saved_model(args.data_path,args.model_path,args.timesteps_output)
+        delafo = DELAFO.from_saved_model(args.data_path,args.model_path,args.timesteps_output, arg.data_from, arg.data_to )
         delafo.train_model(n_fold=10,batch_size=16,epochs=300)
         delafo.save_model()
