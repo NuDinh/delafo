@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 from sklearn.model_selection import train_test_split
 # def prepair_data(path,window_x,window_y):
@@ -44,11 +45,15 @@ def prepair_data(path, window_x, window_y, data_from, data_to):
 
 
   # removing data do not transaction in 3 months ago
+ 
   last_date = max(original_dataset.date)
-  three_months_ago = dt.date(day=last_date.day-3, month= (last_date.month - 3), year=last_date.year).strftime('%Y-%m-%d')
+  last_date_minus_3_months = last_date + relativedelta(months=-3)
+  proc_dt_minus_3_months_str = last_date_minus_3_months.date().strftime('%Y-%m-%d')
+
   df_3m = df_final.close.reset_index()
   df_3m['date'] = pd.to_datetime(df_3m['date'])
-  df_3_tmp = df_3m.loc[df_3m.date >= three_months_ago]
+
+  df_3_tmp = df_3m.loc[df_3m.date >= proc_dt_minus_3_months_str]
 
   # remove tiker disapper in 3 months ago
   remain_ticker_3 = df_3_tmp.drop([col for col in df_3_tmp.columns if df_3_tmp[col].isnull().any()], axis =1)
