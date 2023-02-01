@@ -13,17 +13,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import load_model
 class DELAFO:
-    def __init__(self,model_name,model,X,y,tickers,timesteps_input=64,timesteps_output=19):
+    def __init__(self,model_name,model,X,y,tickers,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2019):
         self.model_name = model_name
         self.model = model
         self.X,self.y,self.tickers = X,y,tickers
         self.timesteps_input = timesteps_input
         self.timesteps_output = timesteps_output
+        self.data_from = data_from
+        self.data_to = data_to
 
     @classmethod
-    def from_existing_config(cls,path_data,model_name,model_config_path,timesteps_input=64,timesteps_output=19):
+    def from_existing_config(cls,path_data,model_name,model_config_path,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2019):
 
-        X,y,tickers = prepair_data(path_data,window_x=timesteps_input,window_y=timesteps_output)
+        X,y,tickers = prepair_data(path_data,window_x=timesteps_input,window_y=timesteps_output, data_from = data_from, data_to = data_to)
 
         if model_name == "ResNet":
             hyper_params = load_config_file(model_config_path[model_name])
@@ -57,7 +59,7 @@ class DELAFO:
             hyper_params = load_config_file(model_config_path[model_name])
             hyper_params['input_shape'] = (X.shape[1],X.shape[2],X.shape[3])
             model = build_selfatt_lstm_model(hyper_params)
-        model.name = model_name
+        model._name = model_name
 
         return cls(model_name,model,X,y,tickers,timesteps_input,timesteps_output)
 
@@ -86,18 +88,24 @@ class DELAFO:
 
     def train_model(self,n_fold,batch_size,epochs):
         tscv = TimeSeriesSplit(n_splits=n_fold)
+        all_ratio = []
         for train_index, test_index in tscv.split(self.X):
-
             X_tr, X_val = self.X[train_index], self.X[test_index[range(self.timesteps_output-1,len(test_index),self.timesteps_output)]]
             y_tr, y_val = self.y[train_index], self.y[test_index[range(self.timesteps_output-1,len(test_index),self.timesteps_output)]]
 
             his = self.model.fit(X_tr, y_tr, batch_size=batch_size, epochs= epochs,validation_data=(X_val,y_val))
             mask_tickers = self.predict_portfolio(X_val)
+            temp = [self.calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]
+            all_ratio.append(temp)
             print('Sharpe ratio of this portfolio: %s' % str([self.calc_sharpe_ratio(mask_tickers[i],y_val[i]) for i in range(len(y_val))]))
 
             self.write_log(his,'./logs/%s' % self.model_name,"log_%d.txt"%(test_index[-1]))
-        self.visualize_log('./logs',self.model_name)
 
+        all_ratio = np.asarray(all_ratio)
+        mean_all_ratio = np.mean(all_ratio, axis= 1)
+        print('Mean: {}, std {}'.format(np.mean(mean_all_ratio), np.std(mean_all_ratio)))
+        self.visualize_log('./logs',self.model_name)
+    
     def save_model(self,path_dir="pretrain_model"):
         if os.path.exists(os.path.join(path_dir,self.model_name))==False:
             os.makedirs(os.path.join(path_dir,self.model_name))
@@ -108,6 +116,7 @@ class DELAFO:
             ver = 0
         self.model.save(os.path.join(path_dir,self.model_name,str(ver) + '.h5'))
         print("Model saved at %s" % os.path.join(path_dir,self.model_name))
+    
 
     def predict_portfolio(self,X):
         results = self.model.predict(X)
@@ -168,13 +177,15 @@ if __name__ =="__main__":
     parser.add_argument('--model_path', type=str, default='',help='Path to pretrain model')
     parser.add_argument('--timesteps_input', type=int, default=64,help='timesteps (days) for input data')
     parser.add_argument('--timesteps_output', type=int, default=19,help='Timesteps (days) for output data ')
+    parser.add_argument('--data_from', type=int, default=2016,help='Timesteps (days) for output data ')
+    parser.add_argument('--data_to', type=int, default=2019,help='Timesteps (days) for output data ')
     args = parser.parse_args()
 
     if args.load_pretrained == False:
-        delafo = DELAFO.from_existing_config(args.data_path,args.model,model_config_path,args.timesteps_input,args.timesteps_output)
-        delafo.train_model(n_fold=10,batch_size=16,epochs=300)
+        delafo = DELAFO.from_existing_config(args.data_path,args.model,model_config_path,args.timesteps_input,args.timesteps_output,args.data_from,args.data_to)
+        delafo.train_model(n_fold=2,batch_size=16,epochs=10)
         delafo.save_model()
     else:
         delafo = DELAFO.from_saved_model(args.data_path,args.model_path,args.timesteps_output)
-        delafo.train_model(n_fold=10,batch_size=16,epochs=300)
+        delafo.train_model(n_fold=2,batch_size=16,epochs=10)
         delafo.save_model()
