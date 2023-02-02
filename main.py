@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import load_model
 class DELAFO:
-    def __init__(self,model_name,model,X,y,tickers,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2019):
+    def __init__(self,model_name,model,X,y,tickers,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2022):
         self.model_name = model_name
         self.model = model
         self.X,self.y,self.tickers = X,y,tickers
@@ -23,7 +23,7 @@ class DELAFO:
         self.data_to = data_to
 
     @classmethod
-    def from_existing_config(cls,path_data,model_name,model_config_path,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2019):
+    def from_existing_config(cls,path_data,model_name,model_config_path,timesteps_input=64,timesteps_output=19, data_from = 2016, data_to = 2022):
 
         X,y,tickers = prepair_data(path_data,window_x=timesteps_input,window_y=timesteps_output, data_from = data_from, data_to = data_to)
 
@@ -176,9 +176,9 @@ if __name__ =="__main__":
     parser.add_argument('--load_pretrained', type=bool, default=False,help='Load pretrain model')
     parser.add_argument('--model_path', type=str, default='',help='Path to pretrain model')
     parser.add_argument('--timesteps_input', type=int, default=64,help='timesteps (days) for input data')
-    parser.add_argument('--timesteps_output', type=int, default=19,help='Timesteps (days) for output data ')
-    parser.add_argument('--data_from', type=int, default=2016,help='Timesteps (days) for output data ')
-    parser.add_argument('--data_to', type=int, default=2019,help='Timesteps (days) for output data ')
+    parser.add_argument('--timesteps_output', type=int, default=19,help='Timesteps (days) for output data')
+    parser.add_argument('--data_from', type=int, default=2016,help='Get data from year')
+    parser.add_argument('--data_to', type=int, default=2022,help='Get data until year')
     args = parser.parse_args()
 
     if args.load_pretrained == False:
