@@ -75,7 +75,7 @@ class DELAFO:
         model_name = model.name
         input_shape = K.int_shape(model.input)
         timesteps_input = input_shape[2]
-        X,y,tickers = prepair_data(path_data,window_x=timesteps_input,window_y=timesteps_output)
+        X,y,tickers = prepair_data(path_data,window_x=timesteps_input,window_y=timesteps_output,data_from=data_from,data_to=data_to)
         return cls(model_name,model,X,y,tickers,timesteps_input,timesteps_output)
 
     def write_log(self,history,path_dir,name_file):
